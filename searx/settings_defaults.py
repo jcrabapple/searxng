@@ -252,7 +252,6 @@ SCHEMA: dict[str, t.Any] = {
         'api_key': SettingsValue(str, ''),
         'model': SettingsValue(str, 'gpt-4o-mini'),
         'max_results': SettingsValue(int, 10),
-        'prompt': SettingsValue(str, ''),
     },
     'outgoing': {
         'useragent_suffix': SettingsValue(str, ''),
