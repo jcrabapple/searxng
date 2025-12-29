@@ -954,10 +954,21 @@ def preferences():
         resp = make_response(redirect(url_for('index', _external=True)))
         try:
             sxng_request.preferences.parse_form(sxng_request.form)
-        except ValidationException:
+        except ValidationException as e:
+            logger.error("ValidationException in preferences: %s", e)
             sxng_request.errors.append(gettext('Invalid settings, please edit your preferences'))
             return resp
-        return sxng_request.preferences.save(resp)
+        except Exception as e:
+            logger.exception("Exception parsing preferences: %s", e)
+            sxng_request.errors.append(gettext('Invalid settings, please edit your preferences'))
+            return resp
+        
+        try:
+            return sxng_request.preferences.save(resp)
+        except Exception as e:
+            logger.exception("Exception saving preferences: %s", e)
+            sxng_request.errors.append(gettext('Error saving preferences. Your custom prompt may be too long.'))
+            return resp
 
     # render preferences
     image_proxy = sxng_request.preferences.get_value('image_proxy')  # pylint: disable=redefined-outer-name
