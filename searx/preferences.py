@@ -83,20 +83,28 @@ class CompressedStringSetting(StringSetting):
 
     def save(self, name: str, resp: flask.Response):
         """Save compressed cookie in the HTTP response object"""
-        if self.value:
-            compressed = urlsafe_b64encode(compress(self.value.encode())).decode()
-            resp.set_cookie(name, compressed, max_age=COOKIE_MAX_AGE)
+        if self.value and len(self.value) > 500:
+            try:
+                compressed = urlsafe_b64encode(compress(self.value.encode())).decode()
+                resp.set_cookie(name, compressed, max_age=COOKIE_MAX_AGE)
+            except Exception:
+                resp.set_cookie(name, self.value, max_age=COOKIE_MAX_AGE)
         else:
-            resp.set_cookie(name, '', max_age=COOKIE_MAX_AGE)
+            resp.set_cookie(name, self.value or '', max_age=COOKIE_MAX_AGE)
 
     def parse(self, data: str):
         """Parse and decompress the cookie data"""
-        if data:
+        if not data:
+            self.value = data
+            return
+        
+        try:
+            decoded = urlsafe_b64decode(data)
             try:
-                self.value = decompress(urlsafe_b64decode(data)).decode()
+                self.value = decompress(decoded).decode()
             except Exception:
                 self.value = data
-        else:
+        except Exception:
             self.value = data
 
 
