@@ -78,6 +78,28 @@ class StringSetting(Setting):
     """Setting of plain string values"""
 
 
+class CompressedStringSetting(StringSetting):
+    """Setting that compresses string values before saving to cookies to handle large text."""
+
+    def save(self, name: str, resp: flask.Response):
+        """Save compressed cookie in the HTTP response object"""
+        if self.value:
+            compressed = urlsafe_b64encode(compress(self.value.encode())).decode()
+            resp.set_cookie(name, compressed, max_age=COOKIE_MAX_AGE)
+        else:
+            resp.set_cookie(name, '', max_age=COOKIE_MAX_AGE)
+
+    def parse(self, data: str):
+        """Parse and decompress the cookie data"""
+        if data:
+            try:
+                self.value = decompress(urlsafe_b64decode(data)).decode()
+            except Exception:
+                self.value = data
+        else:
+            self.value = data
+
+
 class EnumStringSetting(Setting):
     """Setting of a value which can only come from the given choices"""
 
@@ -509,7 +531,7 @@ class Preferences:
                 str(settings.get('quick_summary', {}).get('max_results', 10)),
                 locked=is_locked('quick_summary_max_results')
             ),
-            'quick_summary_prompt': StringSetting(
+            'quick_summary_prompt': CompressedStringSetting(
                 settings.get('quick_summary', {}).get('prompt', ''),
                 locked=is_locked('quick_summary_prompt')
             ),
