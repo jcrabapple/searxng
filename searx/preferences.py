@@ -509,6 +509,10 @@ class Preferences:
                 str(settings.get('quick_summary', {}).get('max_results', 10)),
                 locked=is_locked('quick_summary_max_results')
             ),
+            'quick_summary_prompt': StringSetting(
+                settings.get('quick_summary', {}).get('prompt', ''),
+                locked=is_locked('quick_summary_prompt')
+            ),
             # fmt: on
         }
 

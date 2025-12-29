@@ -21,8 +21,18 @@ _cache_config = ExpireCacheCfg(
 _summary_cache = ExpireCacheSQLite(_cache_config)
 
 
-def create_summary_prompt(query: str, results: list[dict]) -> str:
-    """Create a prompt for the LLM with citation instructions."""
+def create_summary_prompt(query: str, results: list[dict], custom_prompt: str = '') -> str:
+    """Create a prompt for the LLM with citation instructions.
+    
+    Args:
+        query: The search query
+        results: List of search result dicts
+        custom_prompt: Optional custom prompt template. If provided, will be used instead of default.
+                       Can use {query} and {results_text} as placeholders.
+    
+    Returns:
+        The formatted prompt string
+    """
     
     results_text = "\n\n".join([
         f"Result {i+1}:\n"
@@ -32,7 +42,10 @@ def create_summary_prompt(query: str, results: list[dict]) -> str:
         for i, r in enumerate(results)
     ])
     
-    prompt = f"""You are a helpful search assistant. Summarize the search results for the query: "{query}"
+    if custom_prompt and custom_prompt.strip():
+        prompt = custom_prompt.format(query=query, results_text=results_text)
+    else:
+        prompt = f"""You are a helpful search assistant. Summarize the search results for the query: "{query}"
 
 Here are the top {len(results)} search results:
 
@@ -202,7 +215,8 @@ async def generate_summary(
     results: list[dict],
     api_config: dict,
     max_results: int,
-    use_cache: bool = True
+    use_cache: bool = True,
+    custom_prompt: str = ''
 ) -> dict:
     """Generate a summary of search results using LLM.
     
@@ -212,6 +226,7 @@ async def generate_summary(
         api_config: Dict with 'api_base_url', 'api_key', 'model'
         max_results: Number of results to include in summary
         use_cache: Whether to check cache
+        custom_prompt: Optional custom prompt template to use instead of default
     
     Returns:
         dict with keys:
@@ -243,7 +258,7 @@ async def generate_summary(
             return cached_result
     
     # Generate prompt
-    prompt = create_summary_prompt(query, results)
+    prompt = create_summary_prompt(query, results, custom_prompt)
     
     # Call LLM API
     api_url = api_config.get('api_base_url', '')

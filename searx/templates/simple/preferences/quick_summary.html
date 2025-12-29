@@ -66,7 +66,17 @@
            step="1"{{- '' -}}
            >{{- '' -}}
   </div>{{- '' -}}
+  <div class="value">{{- '' -}}
+    <label for="pref_quick_summary_prompt">{{ _('Custom Summary Prompt') }}</label>{{- '' -}}
+    <textarea {{- ' ' -}}
+           id="pref_quick_summary_prompt" {{- ' ' -}}
+           name="quick_summary_prompt" {{- ' ' -}}
+           aria-labelledby="pref_quick_summary_settings" {{- ' ' -}}
+           rows="10" {{- ' ' -}}
+           placeholder="{{ _('Leave empty to use default prompt. Use {query} for the search query and {results_text} for the formatted results.') }}"{{- '' -}}
+    >{{ preferences.get_value('quick_summary_prompt') or '' }}</textarea>{{- '' -}}
+  </div>{{- '' -}}
   <div class="description">
-    {{- _('Number of top results to summarize (5-20)') -}}
+    {{- _('Customize the prompt template for generating summaries. Available placeholders: {query}, {results_text}') -}}
   </div>{{- '' -}}
 </fieldset>{{- '' -}}

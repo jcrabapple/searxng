@@ -922,7 +922,8 @@ def quick_summary_endpoint():
                 results=results,
                 api_config=api_config,
                 max_results=max_results,
-                use_cache=True
+                use_cache=True,
+                custom_prompt=sxng_request.preferences.get_value('quick_summary_prompt') or ''
             )
         )
         loop.close()
