@@ -81,14 +81,27 @@ class StringSetting(Setting):
 class CompressedStringSetting(StringSetting):
     """Setting that compresses string values before saving to cookies to handle large text."""
 
+    MAX_COOKIE_SIZE = 3000
+
     def save(self, name: str, resp: flask.Response):
         """Save compressed cookie in the HTTP response object"""
         if self.value and len(self.value) > 500:
             try:
                 compressed = urlsafe_b64encode(compress(self.value.encode())).decode()
+                if len(compressed) > self.MAX_COOKIE_SIZE:
+                    logger.warning("Cookie %s too large (%d chars), truncating", name, len(compressed))
+                    truncated_value = self.value[:2000]
+                    compressed = urlsafe_b64encode(compress(truncated_value.encode())).decode()
+                    self.value = truncated_value
                 resp.set_cookie(name, compressed, max_age=COOKIE_MAX_AGE)
-            except Exception:
-                resp.set_cookie(name, self.value, max_age=COOKIE_MAX_AGE)
+            except Exception as e:
+                logger.warning("Compression failed for %s: %s, using raw value", name, e)
+                if len(self.value) <= self.MAX_COOKIE_SIZE:
+                    resp.set_cookie(name, self.value, max_age=COOKIE_MAX_AGE)
+                else:
+                    truncated = self.value[:self.MAX_COOKIE_SIZE]
+                    self.value = truncated
+                    resp.set_cookie(name, truncated, max_age=COOKIE_MAX_AGE)
         else:
             resp.set_cookie(name, self.value or '', max_age=COOKIE_MAX_AGE)
 

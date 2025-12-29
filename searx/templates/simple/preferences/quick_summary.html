@@ -73,10 +73,11 @@
            name="quick_summary_prompt" {{- ' ' -}}
            aria-labelledby="pref_quick_summary_settings" {{- ' ' -}}
            rows="10" {{- ' ' -}}
+           maxlength="2000" {{- ' ' -}}
            placeholder="{{ _('Leave empty to use default prompt. Use {query} for the search query and {results_text} for the formatted results.') }}"{{- '' -}}
     >{{ preferences.get_value('quick_summary_prompt') or '' }}</textarea>{{- '' -}}
   </div>{{- '' -}}
   <div class="description">
-    {{- _('Customize the prompt template for generating summaries. Available placeholders: {query}, {results_text}') -}}
+    {{- _('Customize the prompt template for generating summaries. Available placeholders: {query}, {results_text}. Maximum 2000 characters.') -}}
   </div>{{- '' -}}
 </fieldset>{{- '' -}}
